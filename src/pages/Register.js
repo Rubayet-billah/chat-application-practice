@@ -1,13 +1,15 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import logoImage from "../assets/images/lws-logo-light.svg";
+import { useRegisterMutation } from "../features/auth/authApi";
 
 export default function Register() {
+  const [register, { data: userData, isSuccess, isError }] =
+    useRegisterMutation();
   const [data, setData] = useState({});
-  const [passMatched, setPassMatched] = useState(false);
   const [agreed, setAgreed] = useState(false);
 
-  const { password, confirmPassword } = data;
+  const { name, email, password, confirmPassword } = data;
 
   const handleInput = (e) => {
     if (e.target.name === "agreed") {
@@ -27,6 +29,7 @@ export default function Register() {
   const handleRegister = (e) => {
     e.preventDefault();
 
+    register({ name, email, password });
     console.log(data);
   };
 

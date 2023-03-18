@@ -1,4 +1,5 @@
 import apiSlice from "../api/apiSlice";
+import { userLoggedIn } from "./authSlice";
 
 export const authApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -8,6 +9,28 @@ export const authApi = apiSlice.injectEndpoints({
         method: "POST",
         body: data,
       }),
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          const result = await queryFulfilled;
+
+          // save data to local storage
+          localStorage.setItem(
+            "auth",
+            JSON.stringify({
+              accessToken: result.data.accessToken,
+              user: result.data.user,
+            })
+          );
+
+          // dispatch action for update local state
+          dispatch(
+            userLoggedIn({
+              accessToken: result.data.accessToken,
+              user: result.data.user,
+            })
+          );
+        } catch (error) {}
+      },
     }),
     login: builder.mutation({
       query: (data) => ({
@@ -15,6 +38,28 @@ export const authApi = apiSlice.injectEndpoints({
         method: "POST",
         body: data,
       }),
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          const result = await queryFulfilled;
+
+          // save data to local storage
+          localStorage.setItem(
+            "auth",
+            JSON.stringify({
+              accessToken: result.data.accessToken,
+              user: result.data.user,
+            })
+          );
+
+          // dispatch action for update local state
+          dispatch(
+            userLoggedIn({
+              accessToken: result.data.accessToken,
+              user: result.data.user,
+            })
+          );
+        } catch (error) {}
+      },
     }),
   }),
 });
