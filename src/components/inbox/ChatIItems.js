@@ -34,6 +34,7 @@ export default function ChatItems() {
         <li>
           <ChatItem
             key={id}
+            id={id}
             avatar={gravatar.url(partnerEmail)}
             name={name}
             lastMessage={message}
