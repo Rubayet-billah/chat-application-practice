@@ -24,7 +24,7 @@ export default function Login() {
 
   useEffect(() => {
     if (isSuccess) {
-      navigate("/");
+      navigate("/inbox");
     }
   }, [isSuccess, navigate]);
 
