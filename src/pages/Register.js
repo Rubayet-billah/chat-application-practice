@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import logoImage from "../assets/images/lws-logo-light.svg";
 import { useRegisterMutation } from "../features/auth/authApi";
 
@@ -8,6 +8,7 @@ export default function Register() {
     useRegisterMutation();
   const [data, setData] = useState({});
   const [agreed, setAgreed] = useState(false);
+  const navigate = useNavigate();
 
   const { name, email, password, confirmPassword } = data;
 
@@ -32,6 +33,12 @@ export default function Register() {
     register({ name, email, password });
     console.log(data);
   };
+
+  useEffect(() => {
+    if (isSuccess) {
+      navigate("/");
+    }
+  }, [isSuccess, navigate]);
 
   return (
     <div className="grid place-items-center h-screen bg-[#F9FAFB">

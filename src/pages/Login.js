@@ -1,10 +1,13 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import logoImage from "../assets/images/lws-logo-light.svg";
 import Error from "../components/ui/Error";
+import { useLoginMutation } from "../features/auth/authApi";
 
 export default function Login() {
+  const [login, { data: userData, isSuccess, isError }] = useLoginMutation();
   const [data, setData] = useState({});
+  const navigate = useNavigate();
 
   const handleInput = (e) => {
     setData({
@@ -15,9 +18,15 @@ export default function Login() {
 
   const handleLogin = (e) => {
     e.preventDefault();
-
+    login(data);
     console.log(data);
   };
+
+  useEffect(() => {
+    if (isSuccess) {
+      navigate("/");
+    }
+  }, [isSuccess, navigate]);
 
   return (
     <div className="grid place-items-center h-screen bg-[#F9FAFB">
