@@ -1,5 +1,5 @@
 import apiSlice from "../api/apiSlice";
-import { userLoggedIn } from "./authSlice";
+import { checkLoading, userLoggedIn } from "./authSlice";
 
 export const authApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -29,7 +29,11 @@ export const authApi = apiSlice.injectEndpoints({
               user: result.data.user,
             })
           );
-        } catch (error) {}
+        } catch (error) {
+        } finally {
+          // set loading false for private route
+          dispatch(checkLoading());
+        }
       },
     }),
     login: builder.mutation({
@@ -58,7 +62,11 @@ export const authApi = apiSlice.injectEndpoints({
               user: result.data.user,
             })
           );
-        } catch (error) {}
+        } catch (error) {
+        } finally {
+          // set loading false for private route
+          dispatch(checkLoading());
+        }
       },
     }),
   }),

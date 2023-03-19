@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-import { userLoggedIn } from "../features/auth/authSlice";
+import { checkLoading, userLoggedIn } from "../features/auth/authSlice";
 
 const useAuthCheck = () => {
   const [authChecked, setAuthChecked] = useState(false);
@@ -19,6 +19,7 @@ const useAuthCheck = () => {
         );
       }
     }
+    dispatch(checkLoading());
     setAuthChecked(true);
   }, [dispatch]);
   return authChecked;
