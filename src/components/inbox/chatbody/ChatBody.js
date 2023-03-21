@@ -1,14 +1,24 @@
 // import Blank from "./Blank";
+import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { useGetMessagesQuery } from "../../../features/messages/messagesApi";
 import Error from "../../ui/Error";
 import ChatHead from "./ChatHead";
 import Messages from "./Messages";
 import Options from "./Options";
+import gravatar from "gravatar";
 
 export default function ChatBody() {
   const { id } = useParams();
   const { data: messages, isLoading, isError, error } = useGetMessagesQuery(id);
+  const {
+    user: { email: myEmail },
+  } = useSelector((state) => state.auth);
+
+  // get partner email
+  const getPartnerInfoFromMessage = (message, myEmail) => {
+    return message.sender.email === myEmail ? message.receiver : message.sender;
+  };
 
   // decide what to render
   let content = null;
@@ -27,8 +37,10 @@ export default function ChatBody() {
     content = (
       <>
         <ChatHead
-          avatar="https://cdn.pixabay.com/photo/2018/01/15/07/51/woman-3083383__340.jpg"
-          name="Akash Ahmed"
+          avatar={gravatar.url(
+            getPartnerInfoFromMessage(messages[0], myEmail).email
+          )}
+          name={getPartnerInfoFromMessage(messages[0], myEmail).name}
         />
         <Messages messages={messages} />
         <Options />
