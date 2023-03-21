@@ -1,14 +1,28 @@
 import { useState } from "react";
 import { toast } from "react-hot-toast";
+import { useSelector } from "react-redux";
+import { useGetUserQuery } from "../../features/users/userApi";
 
 export default function Modal({ open, control }) {
+  // local states
   const [to, setTo] = useState("");
   const [message, setMessage] = useState("");
+  const [fetch, setFetch] = useState(false);
+  // redux hooks
+  const { data: existedUser } = useGetUserQuery(to, {
+    skip: fetch,
+  });
+  const { user } = useSelector((state) => state.auth);
 
+  // handle form submit
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(to)) {
-      return toast.error("Email is not valid");
+    setFetch(true);
+    if (to === user.email) {
+      return toast.error("You can't send message yourself");
+    }
+    if (existedUser) {
+      console.log(existedUser);
     }
     console.log({ to, message });
   };
