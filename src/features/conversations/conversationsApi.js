@@ -20,7 +20,21 @@ const conversationsApi = apiSlice.injectEndpoints({
       }),
       async onQueryStarted({ sender, data }, { queryFulfilled, dispatch }) {
         const conversation = await queryFulfilled;
-        console.log(conversation.data);
+
+        const senderUser = data?.users.find((user) => user.email === sender);
+        const receiverUser = data?.users.find((user) => user.email !== sender);
+        if (conversation?.data) {
+          // silent message entry
+          dispatch(
+            apiSlice.endpoints.postMessages.initiate({
+              conversationId: conversation?.data.id,
+              sender: senderUser,
+              receiver: receiverUser,
+              message: data?.message,
+              timestamp: data?.timestamp,
+            })
+          );
+        }
       },
     }),
     updateConversation: builder.mutation({

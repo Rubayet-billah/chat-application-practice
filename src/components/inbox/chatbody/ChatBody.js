@@ -43,7 +43,7 @@ export default function ChatBody() {
           name={getPartnerInfoFromMessage(messages[0], myEmail).name}
         />
         <Messages messages={messages} />
-        <Options />
+        <Options info={messages[0]} />
       </>
     );
   }
