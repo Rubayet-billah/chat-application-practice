@@ -3,7 +3,7 @@ const messagesApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getMessages: builder.query({
       query: (id) => ({
-        url: `/messages?conversationId=${id}&_sort=timestamp&_order=desc&_page=1&_limit=${process.env.REACT_APP_messages_per_page}`,
+        url: `/messages?conversationId=${id}&_sort=timestamp&_order=asc&_page=1&_limit=${process.env.REACT_APP_messages_per_page}`,
       }),
     }),
     postMessages: builder.mutation({
