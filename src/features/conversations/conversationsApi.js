@@ -18,13 +18,35 @@ const conversationsApi = apiSlice.injectEndpoints({
         method: "POST",
         body: data,
       }),
+      async onQueryStarted({ sender, data }, { queryFulfilled, dispatch }) {
+        const conversation = await queryFulfilled;
+        console.log(conversation.data);
+      },
     }),
     updateConversation: builder.mutation({
-      query: ({ id, data }) => ({
+      query: ({ sender, id, data }) => ({
         url: `/conversations/${id}`,
         method: "PATCH",
         body: data,
       }),
+      async onQueryStarted({ sender, data }, { queryFulfilled, dispatch }) {
+        const conversation = await queryFulfilled;
+
+        const senderUser = data?.users.find((user) => user.email === sender);
+        const receiverUser = data?.users.find((user) => user.email !== sender);
+        if (conversation?.data) {
+          // silent message entry
+          dispatch(
+            apiSlice.endpoints.postMessages.initiate({
+              conversationId: conversation?.data.id,
+              sender: senderUser,
+              receiver: receiverUser,
+              message: data?.message,
+              timestamp: data?.timestamp,
+            })
+          );
+        }
+      },
     }),
   }),
 });
