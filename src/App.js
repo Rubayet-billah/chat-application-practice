@@ -1,3 +1,4 @@
+import { Toaster } from "react-hot-toast";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import useAuthCheck from "./hooks/useAuthCheck";
 import Conversation from "./pages/Conversation";
@@ -10,28 +11,31 @@ function App() {
   const authChecked = useAuthCheck();
 
   return authChecked ? (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route
-          path="/inbox"
-          element={
-            <PrivateRoute>
-              <Conversation />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/inbox/:id"
-          element={
-            <PrivateRoute>
-              <Inbox />
-            </PrivateRoute>
-          }
-        />
-      </Routes>
-    </Router>
+    <>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route
+            path="/inbox"
+            element={
+              <PrivateRoute>
+                <Conversation />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/inbox/:id"
+            element={
+              <PrivateRoute>
+                <Inbox />
+              </PrivateRoute>
+            }
+          />
+        </Routes>
+      </Router>
+      <Toaster />
+    </>
   ) : (
     <p>Checking authentication...</p>
   );
