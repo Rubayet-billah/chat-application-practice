@@ -2,6 +2,10 @@ import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
 import apiSlice from "../../features/api/apiSlice";
+import {
+  usePostConversationMutation,
+  useUpdateConversationMutation,
+} from "../../features/conversations/conversationsApi";
 import { useGetUserQuery } from "../../features/users/userApi";
 import Error from "../ui/Error";
 
@@ -15,17 +19,65 @@ export default function Modal({ open, control }) {
   const { data: existedUser } = useGetUserQuery(to, {
     skip: fetch,
   });
-  const { user } = useSelector((state) => state.auth);
+  const [
+    postConversation,
+    { isError: postConversationError, isSuccess: postConversationSuccess },
+  ] = usePostConversationMutation();
+  const [
+    updateConversation,
+    { isError: updateConversationError, isSuccess: updateConversationSuccess },
+  ] = useUpdateConversationMutation();
+  const { user: loggedInUser } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
+
+  // handle form submit
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setFetch(false);
+    if (to === loggedInUser.email) {
+      return toast.error("You can't send message yourself");
+    }
+  };
+
+  // useEffect for update or post conversation
+  useEffect(() => {
+    if (conversation?.length > 0) {
+      // update existed conversation
+      updateConversation({
+        sender: loggedInUser.email,
+        id: conversation[0].id,
+        data: {
+          ...conversation[0],
+          message,
+          timestamp: new Date().getTime(),
+        },
+      });
+    }
+    if (conversation?.length === 0) {
+      // post new conversation
+      postConversation({
+        sender: loggedInUser.email,
+        data: {
+          participants: `${loggedInUser?.email}-${to}`,
+          users: [loggedInUser, existedUser[0]],
+          message,
+          timestamp: new Date().getTime(),
+        },
+      });
+    }
+  }, [conversation]);
 
   // useEffect for listening respose for existedUser
   useEffect(() => {
-    if (existedUser?.length > 0 && existedUser[0]?.email !== user.email) {
+    if (
+      existedUser?.length > 0 &&
+      existedUser[0]?.email !== loggedInUser?.email
+    ) {
       // check existing conversation
       // manually dispatching actions in RTK Query
       dispatch(
         apiSlice.endpoints.getConversation.initiate({
-          myEmail: user.email,
+          myEmail: loggedInUser?.email,
           partnerEmail: to,
         })
       )
@@ -40,16 +92,13 @@ export default function Modal({ open, control }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [existedUser]);
 
-  // handle form submit
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setFetch(false);
-    if (to === user.email) {
-      return toast.error("You can't send message yourself");
+  // listen post/update conversation success
+  useEffect(() => {
+    if (postConversationSuccess || updateConversationSuccess) {
+      toast.success("Message sent");
+      control();
     }
-
-    console.log({ to, message });
-  };
+  }, [postConversationSuccess, updateConversationSuccess]);
 
   return (
     open && (

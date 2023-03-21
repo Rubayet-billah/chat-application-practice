@@ -13,7 +13,7 @@ const conversationsApi = apiSlice.injectEndpoints({
       }),
     }),
     postConversation: builder.mutation({
-      query: (data) => ({
+      query: ({ sender, data }) => ({
         url: "/conversations",
         method: "POST",
         body: data,
