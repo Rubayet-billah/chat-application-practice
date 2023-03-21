@@ -1,29 +1,53 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import apiSlice from "../../features/api/apiSlice";
 import { useGetUserQuery } from "../../features/users/userApi";
+import Error from "../ui/Error";
 
 export default function Modal({ open, control }) {
   // local states
   const [to, setTo] = useState("");
   const [message, setMessage] = useState("");
-  const [fetch, setFetch] = useState(false);
+  const [fetch, setFetch] = useState(true);
+  const [conversation, setConversation] = useState(null);
   // redux hooks
   const { data: existedUser } = useGetUserQuery(to, {
     skip: fetch,
   });
   const { user } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+
+  // useEffect for listening respose for existedUser
+  useEffect(() => {
+    if (existedUser?.length > 0 && existedUser[0]?.email !== user.email) {
+      // check existing conversation
+      // manually dispatching actions in RTK Query
+      dispatch(
+        apiSlice.endpoints.getConversation.initiate({
+          myEmail: user.email,
+          partnerEmail: to,
+        })
+      )
+        .unwrap()
+        .then((data) => {
+          setConversation(data);
+        })
+        .catch((err) => {
+          toast.error("Error getting conversation");
+        });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [existedUser]);
 
   // handle form submit
   const handleSubmit = (e) => {
     e.preventDefault();
-    setFetch(true);
+    setFetch(false);
     if (to === user.email) {
       return toast.error("You can't send message yourself");
     }
-    if (existedUser) {
-      console.log(existedUser);
-    }
+
     console.log({ to, message });
   };
 
@@ -79,7 +103,9 @@ export default function Modal({ open, control }) {
               </button>
             </div>
 
-            {/* <Error message="There was an error" /> */}
+            {existedUser?.length === 0 && (
+              <Error message="User does not exist" />
+            )}
           </form>
         </div>
       </>

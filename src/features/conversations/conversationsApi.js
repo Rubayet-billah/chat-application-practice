@@ -9,7 +9,7 @@ const conversationsApi = apiSlice.injectEndpoints({
     }),
     getConversation: builder.query({
       query: ({ myEmail, partnerEmail }) => ({
-        url: `/getconversations?participants_like=${myEmail}-${partnerEmail}&&participants_like=${partnerEmail}-${myEmail}`,
+        url: `/conversations?participants_like=${myEmail}-${partnerEmail}&&participants_like=${partnerEmail}-${myEmail}`,
       }),
     }),
     postConversation: builder.mutation({
