@@ -9,7 +9,6 @@ export default function Options({ info }) {
   const { user: loggedInUser } = useSelector((state) => state.auth);
   const [updateConversation, { isSuccess }] = useUpdateConversationMutation();
 
-  console.log(info);
   const messageReceiver =
     info.sender.email === loggedInUser.email ? info.receiver : info.sender;
 
