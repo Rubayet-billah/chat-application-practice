@@ -1,3 +1,4 @@
+import io from "socket.io-client";
 import apiSlice from "../api/apiSlice";
 
 const conversationsApi = apiSlice.injectEndpoints({
@@ -6,6 +7,43 @@ const conversationsApi = apiSlice.injectEndpoints({
       query: (email) => ({
         url: `/conversations?participants_like=${email}&_sort=timestamp&_order=desc&_page=1&_limit=${process.env.REACT_APP_conversation_per_page}`,
       }),
+      async onCacheEntryAdded(
+        arg,
+        { updateCachedData, cacheDataLoaded, cacheEntryRemoved }
+      ) {
+        // create socket
+        const socket = io("http://localhost:9000", {
+          reconnectionDelay: 1000,
+          reconnection: true,
+          reconnectionAttemps: 10,
+          transports: ["websocket"],
+          agent: false,
+          upgrade: false,
+          rejectUnauthorized: false,
+        });
+
+        try {
+          await cacheDataLoaded;
+          socket.on("conversation", (data) => {
+            updateCachedData((draft) => {
+              const newDraft = JSON.parse(JSON.stringify(draft));
+              const conversation = newDraft?.find((c) => {
+                console.log(c.id == data?.data?.id);
+                return c.id == data?.data?.id;
+              });
+              console.log("Inside updateCacheData", conversation?.id);
+              if (conversation?.id) {
+                conversation.message = data?.data?.message;
+                conversation.timestamp = data?.data?.timestamp;
+              } else {
+                // do nothing
+              }
+            });
+          });
+        } catch (error) {}
+        await cacheEntryRemoved;
+        socket.close();
+      },
     }),
     getConversation: builder.query({
       query: ({ myEmail, partnerEmail }) => ({
@@ -48,12 +86,10 @@ const conversationsApi = apiSlice.injectEndpoints({
         const patchResult1 = dispatch(
           apiSlice.util.updateQueryData("getConversations", sender, (draft) => {
             const draftConversation = draft.find((c) => c.id == id);
-            console.log("hello", draft);
             draftConversation.message = data.message;
             draftConversation.timestamp = data.timestamp;
           })
         );
-        console.log(patchResult1);
         // optimistic cache update end
 
         try {
@@ -74,6 +110,17 @@ const conversationsApi = apiSlice.injectEndpoints({
                 timestamp: data?.timestamp,
               })
             ).unwrap();
+
+            // update messages cache pessimistically
+            dispatch(
+              apiSlice.util.updateQueryData(
+                "getMessages",
+                res.conversationId.toString(),
+                (draft) => {
+                  draft.push(res);
+                }
+              )
+            );
           }
         } catch (error) {
           patchResult1.undo();
